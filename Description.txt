@@ -1,0 +1,138 @@
+Summary:
+========
+In this assignment I am collecting around 2000 tweets.I extract screen names from the tweets and fetch people who they are following. I build a graph based on this data. 
+Later community detection is performed using girvan-newman on the graph obtained to get communities. I am classifying the users based on their first names. this classification is based on the
+census data collected. I would classify users into Male, Female and unknown respectively. I have implemented summarize method to give summary of my analysis to the end user.
+
+instructions to run the code:
+================================
+1. Download the A4 folder completely
+2. Run collect.py
+3. once it gives a message" collecting friends for each user!! this might take time. You can run classify till then!!"
+   you can run classify.py in parallel.
+4. Once collect.py is completed, run cluster.py
+5. Now you can run Summarize.py
+6. I will also add data collected previously, it might be helpful in a way.
+
+Collect.py
+============
+I am collecting tweets from newyork and san fraNsisco containing terms hilary, trump, election and the ones in language english.
+
+it has the following methods:
+
+get_twitter()
+_______________
+
+This method returns an instance of TwitterAPI. using this instance all required data can be collected.
+
+robust_request(twitter, resource, params, max_tries=5)
+_______________________________________________________
+This method is used to make the program sleep for 15 minutes whenever a request fails due to Rate limit.
+
+When a request fails due to unauthorized access or page not found, the method returns 1. I have implemented 
+this to be on the safer side. When data is few days old, there are chances that people might deactivate their accounts.
+if that happens, 404 error gets thrown. some people have privacysettings for their twitter account, when tried to access their data it gives 403 error, this method returns -1 in that case too.
+The initial method given by professor did not handle these cases. I have handled them, otherwise the program would go for 5 continous sleeps and exit later.
+
+get_tweets(request)
+__________________________
+This method is used to extract tweets containing user names.This is to ensure we are collecting non deleted tweets. I am collecting around 2000 tweets for my analysis.
+
+get_screen_names()
+______________________
+This method extracts screen names from tweets.
+
+def get_followed(screen_name,twitter)
+______________________________________
+Using the passed screen name I obtain the list of screen names of people who are being followed.
+
+
+add_all(screen_names,twitter)
+_____________________________
+In this method I am creating a dictionary having the screen names collected from tweets as the keys and list of people being followed as the values.
+
+
+count_followed(followed)
+________________________
+In this method I am counting the number of people followed per screen name. This is useful for graph construction in cluster.py
+
+
+note:
+
+I am collecting followers for 14 users, due to rate limit. if needed you can change the data on line 149
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Cluster.py
+
+I am using followed people data collectde in collect.py in this method.I am using girvan newman approach for community detection. This method will return the communities. I am also displaying the communities obtained. I have used the source code of networkx for girvan newman.
+
+it has the following methods:
+create_graph(followed, followed_total)
+______________________________________
+creates a node for every user in the list. adds an edge from this screen name to every other screen names in his follower list.
+
+draw_network(graph)
+____________________
+uses networkx method to draw the above graph.
+
+girvan_newman(G, most_valuable_edge=None)
+__________________________________________
+
+I wanted to use the method from networkx, since it was not supported, I am using its source code. This method calculates the edge with highest betweenness and removes it. This leads to formation of communities.
+
+_without_most_central_edges(G, most_valuable_edge)
+______________________________________________________
+returns the components after removing edges
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Classify.py
+============
+
+I am getting a list of male and female first names from the census data. I am collecting first names from the tweets, using census data as the basis, I am classifying them into male, female and unknown.
+This has the following methods:
+
+get_census_names
+_________________
+Fetches a list of common male and female names
+
+get_first_name
+_______________
+gets first name from tweets.
+
+gender_by_name
+________________
+assigns gender to tweets based on the census data.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Summarize.py
+=============
+
+In this method I summarize the data obtained from the above methods:
+
+print_genders(tweets)
+______________________
+
+Prints the number of names classified into each category
+
+main:
+=====
+Main method gives a brief summary of all previous methods.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Conclusions:
+
+1. collecting tweets is easier than collecting people followed by users.
+2. tweets containing trump, hilary and election were collected. 
+3. followed people were collected for first 14 users and was used for community detection.
+4. Some times the graph is disconnected which does not yield communities successfully.
+5. I have done gender classification using Census data. If a name is in Male list then gender is male, otherwise it is female, otherwise it is in unknown category. Most of the names fall under unknown category.
+6. Also this approach is slightly biassed. it compares the name with male list first. if it is present then gender is decided as male. There are few cases where names are in both male and female lists.
+7. Finally I could conclude that this is not the best way of classification.
+
+
+
+
